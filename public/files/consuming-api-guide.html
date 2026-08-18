@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Consumindo a API de Reserva de Salas</title>
+<style>
+  :root {
+    --bg: #f7f5f1;
+    --surface: #ffffff;
+    --surface-2: #efeae0;
+    --ink: #1e2a2f;
+    --ink-muted: #5b6b70;
+    --ink-faint: #8b968f;
+    --line: #ddd5c4;
+    --accent: #2b6e63;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2ede8;
+    --accent-soft-line: #bcd6cb;
+
+    --get: #3a6ea5;
+    --get-soft: #e5edf6;
+    --post: #2b6e63;
+    --post-soft: #e2ede8;
+    --patch: #a5761f;
+    --patch-soft: #f5ecd9;
+    --delete: #a5423a;
+    --delete-soft: #f6e4e2;
+
+    --warn-bg: #fbeee0;
+    --warn-line: #e3b876;
+    --warn-ink: #7a4a12;
+
+    --code-bg: #1e2a2f;
+    --code-ink: #e8e4d8;
+    --code-key: #8fd0c4;
+    --code-str: #e3b876;
+    --code-punct: #8b968f;
+
+    --shadow: 0 1px 2px rgba(30,42,47,0.06), 0 6px 20px rgba(30,42,47,0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14191b;
+      --surface: #1b2224;
+      --surface-2: #232b2d;
+      --ink: #e9e5da;
+      --ink-muted: #a3aead;
+      --ink-faint: #6d7a78;
+      --line: #333d3d;
+      --accent: #58ab99;
+      --accent-ink: #0f1716;
+      --accent-soft: #1e2f2b;
+      --accent-soft-line: #345349;
+
+      --get: #7ba9dd;
+      --get-soft: #1c2733;
+      --post: #58ab99;
+      --post-soft: #1e2f2b;
+      --patch: #dbab5c;
+      --patch-soft: #332a17;
+      --delete: #db8177;
+      --delete-soft: #33201d;
+
+      --warn-bg: #33291a;
+      --warn-line: #8a641f;
+      --warn-ink: #f0c584;
+
+      --code-bg: #0f1516;
+      --code-ink: #e8e4d8;
+      --code-key: #7fc4b7;
+      --code-str: #dbab5c;
+      --code-punct: #6d7a78;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14191b;
+    --surface: #1b2224;
+    --surface-2: #232b2d;
+    --ink: #e9e5da;
+    --ink-muted: #a3aead;
+    --ink-faint: #6d7a78;
+    --line: #333d3d;
+    --accent: #58ab99;
+    --accent-ink: #0f1716;
+    --accent-soft: #1e2f2b;
+    --accent-soft-line: #345349;
+
+    --get: #7ba9dd;
+    --get-soft: #1c2733;
+    --post: #58ab99;
+    --post-soft: #1e2f2b;
+    --patch: #dbab5c;
+    --patch-soft: #332a17;
+    --delete: #db8177;
+    --delete-soft: #33201d;
+
+    --warn-bg: #33291a;
+    --warn-line: #8a641f;
+    --warn-ink: #f0c584;
+
+    --code-bg: #0f1516;
+    --code-ink: #e8e4d8;
+    --code-key: #7fc4b7;
+    --code-str: #dbab5c;
+    --code-punct: #6d7a78;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", ui-serif, serif;
+    font-weight: 600;
+    color: var(--ink);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  code, pre, .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    nav.toc { position: static !important; border-right: none; border-bottom: 1px solid var(--line); }
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 32px 20px;
+    border-right: 1px solid var(--line);
+  }
+
+  nav.toc .brand {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 20px;
+  }
+
+  nav.toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  nav.toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 0.86rem;
+  }
+
+  nav.toc a:hover { background: var(--surface-2); color: var(--ink); }
+
+  main {
+    padding: 40px 48px 100px;
+    min-width: 0;
+  }
+
+  header.page {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header.page .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  header.page h1 { font-size: 1.9rem; line-height: 1.2; }
+  header.page p.lede {
+    margin-top: 10px;
+    max-width: 62ch;
+    color: var(--ink-muted);
+    font-size: 0.98rem;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .fact {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    box-shadow: var(--shadow);
+  }
+
+  .fact b { color: var(--ink); font-family: ui-monospace, monospace; }
+  .fact span { color: var(--ink-faint); }
+
+  section { margin: 44px 0; scroll-margin-top: 20px; }
+
+  section > h2 {
+    font-size: 1.32rem;
+    margin-bottom: 4px;
+  }
+
+  section > .section-sub {
+    color: var(--ink-muted);
+    font-size: 0.88rem;
+    margin-bottom: 18px;
+    max-width: 68ch;
+  }
+
+  .callout {
+    border: 1px solid var(--warn-line);
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .callout .mark {
+    font-weight: 700;
+    font-family: Georgia, serif;
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+
+  .callout p { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.55; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout code { background: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 4px; }
+
+  ol.steps {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  ol.steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  ol.steps li::before {
+    content: counter(step);
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-soft-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  ol.steps code {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+  }
+
+  table.env {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  table.env th, table.env td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  table.env th {
+    color: var(--ink-faint);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+  }
+
+  table.env td.k { font-family: ui-monospace, monospace; color: var(--accent); white-space: nowrap; }
+
+  pre.code {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    box-shadow: var(--shadow);
+  }
+
+  pre.code .k { color: var(--code-key); }
+  pre.code .s { color: var(--code-str); }
+  pre.code .p { color: var(--code-punct); }
+  pre.code .c { color: var(--ink-faint); font-style: italic; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .endpoint {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .endpoint-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    text-transform: uppercase;
+  }
+
+  .m-get { background: var(--get-soft); color: var(--get); }
+  .m-post { background: var(--post-soft); color: var(--post); }
+  .m-patch { background: var(--patch-soft); color: var(--patch); }
+  .m-delete { background: var(--delete-soft); color: var(--delete); }
+
+  .path { font-family: ui-monospace, monospace; font-size: 0.92rem; }
+
+  .guard {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 9px;
+    white-space: nowrap;
+  }
+
+  .guard.admin { color: var(--delete); border-color: var(--delete-soft); }
+  .guard.jwt { color: var(--ink-muted); }
+  .guard.public { color: var(--accent); border-color: var(--accent-soft-line); }
+
+  .endpoint p.note {
+    margin: 8px 0 0;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+  }
+
+  .route-table-wrap { overflow-x: auto; }
+
+  table.routes {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  table.routes th {
+    text-align: left;
+    padding: 9px 12px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.routes td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  table.routes tr:last-child td { border-bottom: none; }
+  table.routes td .path { display: block; margin-top: 3px; }
+
+  ul.gotchas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  ul.gotchas li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+  }
+
+  ul.gotchas li::before {
+    content: "!";
+    color: var(--patch);
+    font-weight: 800;
+    font-family: ui-monospace, monospace;
+  }
+
+  ul.gotchas b { color: var(--ink); font-weight: 600; }
+  ul.gotchas code { background: var(--surface-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; font-size: 0.85rem; }
+
+  footer.src {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+</style>
+
+<div class="shell">
+  <nav class="toc">
+    <div class="brand">API de Reserva de Salas</div>
+    <ul>
+      <li><a href="#subir">1. Subir a API</a></li>
+      <li><a href="#auth">2. Autenticação</a></li>
+      <li><a href="#user">3. Rotas — User</a></li>
+      <li><a href="#room">4. Rotas — Room</a></li>
+      <li><a href="#reservation">5. Rotas — Reservation</a></li>
+      <li><a href="#favorites">6. Rotas — Favorites</a></li>
+      <li><a href="#erros">7. Formato de erro</a></li>
+      <li><a href="#gotchas">8. Pegadinhas</a></li>
+      <li><a href="#client">9. Client mínimo</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <header class="page">
+      <div class="eyebrow">Guia de integração — consumo a partir de outro repositório</div>
+      <h1>Consumindo a API de Reserva de Salas</h1>
+      <p class="lede">NestJS 11 + Prisma 7 + PostgreSQL. Sem prefixo global de rota, sem Docker no repo, autenticação por JWT (access + refresh). Este guia cobre só o que o front precisa saber para funcionar de verdade.</p>
+      <div class="facts">
+        <div class="fact"><span>base url</span><b>http://localhost:3000</b></div>
+        <div class="fact"><span>swagger</span><b>/api</b></div>
+        <div class="fact"><span>auth header</span><b>Authorization: Bearer &lt;token&gt;</b></div>
+        <div class="fact"><span>cors</span><b>não habilitado</b></div>
+      </div>
+    </header>
+
+    <section id="subir">
+      <h2>1. Subir a API</h2>
+      <p class="section-sub">Não há Docker/compose neste repositório — o Postgres precisa existir antes de rodar o back.</p>
+
+      <div class="callout">
+        <div class="mark">⚑</div>
+        <div>
+          <p><b>CORS não está habilitado</b> — não existe <code>app.enableCors()</code> em <code>src/main.ts</code>. Um front rodando em outra origem (ex: <code>localhost:5173</code>) vai ter as chamadas bloqueadas pelo navegador até isso ser adicionado no back. Isso precisa ser resolvido pelo time do back antes de integrar de verdade — não é algo que o front resolve sozinho.</p>
+          <p><b>Sem usuário de bootstrap</b> — as migrations não populam nenhum usuário. Como <code>POST /user</code> exige um JWT válido, o primeiro usuário (idealmente com <code>role: ADMIN</code>) precisa ser inserido direto na tabela <code>User</code> do Postgres antes do primeiro login.</p>
+        </div>
+      </div>
+
+      <ol class="steps">
+        <li><code>npm install</code></li>
+        <li>Criar <code>.env</code> na raiz do back (não existe <code>.env.example</code> versionado — usar o formato abaixo)</li>
+        <li><code>npx prisma generate</code> — gera o client Prisma em <code>src/generated/prisma</code></li>
+        <li><code>npx prisma migrate dev</code> — aplica as migrations e cria as tabelas</li>
+        <li>Inserir manualmente o primeiro usuário ADMIN no banco</li>
+        <li><code>npm run dev</code> — sobe com watch em <code>http://localhost:3000</code></li>
+      </ol>
+
+      <table class="env">
+        <thead><tr><th>Variável</th><th>Para quê</th></tr></thead>
+        <tbody>
+          <tr><td class="k">PORT</td><td>Porta HTTP. Cai em 3000 se ausente.</td></tr>
+          <tr><td class="k">DATABASE_URL</td><td>Connection string do Postgres, formato <code>postgresql://usuario:senha@host:5432/banco?schema=public</code></td></tr>
+          <tr><td class="k">JWT_SECRET</td><td>Assinatura do access token. Sem valor, o back não sobe.</td></tr>
+          <tr><td class="k">JWT_EXPIRES_IN</td><td>TTL do access token, ex: <code>1d</code></td></tr>
+          <tr><td class="k">JWT_REFRESH_SECRET</td><td>Assinatura do refresh token</td></tr>
+          <tr><td class="k">JWT_REFRESH_EXPIRES_IN</td><td>TTL do refresh token, ex: <code>7d</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="auth">
+      <h2>2. Autenticação</h2>
+      <p class="section-sub">JWT bearer, dois tokens. O access token <b>não</b> é revogado no logout — só o refresh token é invalidado no servidor. Trate expiração no front, não confie em "logout = token morto".</p>
+
+      <div class="endpoint">
+        <div class="endpoint-head">
+          <span class="badge m-post">post</span>
+          <span class="path">/auth/login</span>
+          <span class="guard public">público</span>
+        </div>
+        <pre class="code"><span class="c">// request</span>
+{ <span class="k">"email"</span><span class="p">:</span> <span class="s">"user@empresa.com"</span><span class="p">,</span> <span class="k">"password"</span><span class="p">:</span> <span class="s">"••••••"</span> }
+
+<span class="c">// response 200</span>
+{ <span class="k">"acessToken"</span><span class="p">:</span> <span class="s">"eyJ..."</span><span class="p">,</span> <span class="k">"refreshToken"</span><span class="p">:</span> <span class="s">"eyJ..."</span> }</pre>
+        <p class="note">Note o typo real da API: <code>acessToken</code>, não <code>accessToken</code>. Retorna <code>401</code> em credenciais inválidas.</p>
+      </div>
+
+      <div class="two-col">
+        <div class="endpoint">
+          <div class="endpoint-head">
+            <span class="badge m-post">post</span>
+            <span class="path">/token/refresh</span>
+            <span class="guard public">público</span>
+          </div>
+          <pre class="code">{ <span class="k">"refreshToken"</span><span class="p">:</span> <span class="s">"eyJ..."</span> }
+<span class="c">→ novo par { acessToken, refreshToken }</span></pre>
+          <p class="note">401 se expirado, inválido ou já revogado.</p>
+        </div>
+        <div class="endpoint">
+          <div class="endpoint-head">
+            <span class="badge m-post">post</span>
+            <span class="path">/auth/logout</span>
+            <span class="guard public">refresh token no body</span>
+          </div>
+          <pre class="code">{ <span class="k">"refreshToken"</span><span class="p">:</span> <span class="s">"eyJ..."</span> }
+<span class="c">→ { message: "Logout realizado com sucesso" }</span></pre>
+          <p class="note">Revoga só o refresh token — descarte o access token no front também.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="user">
+      <h2>3. Rotas — User</h2>
+      <p class="section-sub">Todas exigem <code>Authorization: Bearer</code>. Resposta nunca inclui <code>password</code>.</p>
+      <div class="route-table-wrap">
+      <table class="routes">
+        <thead><tr><th>Rota</th><th>Guard</th><th>Body / Notas</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge m-post">post</span><span class="path">/user</span></td><td>JWT</td><td><code>CreateUserDto</code> — email, name, password (min 6). 409 se email em uso.</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/user</span></td><td>JWT + ADMIN</td><td>lista todos</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/user/:id</span></td><td>JWT</td><td>qualquer usuário autenticado pode ler qualquer id</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/user/:id/reservations</span></td><td>JWT</td><td>reservas desse usuário</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/user/:id/favorites</span></td><td>JWT</td><td>favoritos desse usuário</td></tr>
+          <tr><td><span class="badge m-patch">patch</span><span class="path">/user/:id</span></td><td>JWT</td><td><code>UpdateUserDto</code> (campos opcionais)</td></tr>
+          <tr><td><span class="badge m-delete">delete</span><span class="path">/user/:id</span></td><td>JWT + ADMIN</td><td>soft delete: <code>status=INACTIVE</code>, cancela reservas SCHEDULED do usuário</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="room">
+      <h2>4. Rotas — Room</h2>
+      <p class="section-sub"><code>GET /room/active</code> é declarada antes de <code>GET /room/:id</code> no controller — não é um id, é uma rota fixa (salas com status AVAILABLE ou RESERVED).</p>
+      <div class="route-table-wrap">
+      <table class="routes">
+        <thead><tr><th>Rota</th><th>Guard</th><th>Body / Notas</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge m-post">post</span><span class="path">/room</span></td><td>JWT + ADMIN</td><td><code>CreateRoomDto</code> — name, capacity, description?</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/room</span></td><td>JWT + ADMIN</td><td>lista todas, qualquer status</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/room/active</span></td><td>JWT</td><td>salas AVAILABLE ou RESERVED — a que o front de reserva normalmente lista</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/room/:id</span></td><td>JWT</td><td>—</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/room/:id/reservations</span></td><td>JWT</td><td>reservas dessa sala</td></tr>
+          <tr><td><span class="badge m-patch">patch</span><span class="path">/room/:id</span></td><td>JWT + ADMIN</td><td><code>UpdateRoomDto</code></td></tr>
+          <tr><td><span class="badge m-delete">delete</span><span class="path">/room/:id</span></td><td>JWT + ADMIN</td><td><code>status=REMOVED</code>, cancela reservas SCHEDULED da sala</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="reservation">
+      <h2>5. Rotas — Reservation</h2>
+      <p class="section-sub"><code>DELETE</code> é cancelamento (<code>status=CANCELED</code>), não apaga o registro.</p>
+      <div class="route-table-wrap">
+      <table class="routes">
+        <thead><tr><th>Rota</th><th>Guard</th><th>Body / Notas</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge m-post">post</span><span class="path">/reservation</span></td><td>JWT</td><td><code>CreateReservationDto</code> — userId, roomId, startDateTime, endDateTime (start ≥ agora, end &gt; start). 409 se sobrepõe reserva SCHEDULED na mesma sala; 404 se user/room não existe.</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/reservation</span></td><td>JWT + ADMIN</td><td>lista todas</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/reservation/:id</span></td><td>JWT</td><td>—</td></tr>
+          <tr><td><span class="badge m-patch">patch</span><span class="path">/reservation/:id</span></td><td>JWT</td><td><code>UpdateReservationDto</code></td></tr>
+          <tr><td><span class="badge m-delete">delete</span><span class="path">/reservation/:id</span></td><td>JWT + ADMIN</td><td>cancela (não apaga)</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="favorites">
+      <h2>6. Rotas — Favorites</h2>
+      <p class="section-sub">O <code>:id</code> não é uma coluna de banco — é a chave composta <code>"&lt;userId&gt;_&lt;roomId&gt;"</code> montada no front/back a partir dos dois ids.</p>
+      <div class="route-table-wrap">
+      <table class="routes">
+        <thead><tr><th>Rota</th><th>Guard</th><th>Body / Notas</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge m-post">post</span><span class="path">/favorites</span></td><td>JWT</td><td><code>CreateFavoriteDto</code> — userId, roomId. 409 se já favoritado.</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/favorites</span></td><td>JWT</td><td>lista todos</td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/favorites/:id</span></td><td>JWT</td><td>id = <code>userId_roomId</code></td></tr>
+          <tr><td><span class="badge m-get">get</span><span class="path">/favorites/user/:id</span></td><td>JWT</td><td>id = userId — favoritos de um usuário</td></tr>
+          <tr><td><span class="badge m-patch">patch</span><span class="path">/favorites/:id</span></td><td>JWT</td><td>id = <code>userId_roomId</code></td></tr>
+          <tr><td><span class="badge m-delete">delete</span><span class="path">/favorites/:id</span></td><td>JWT</td><td>id = <code>userId_roomId</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <section id="erros">
+      <h2>7. Formato de erro</h2>
+      <p class="section-sub">Sem exception filter customizado — é o formato padrão do Nest para todo <code>HttpException</code>.</p>
+      <pre class="code">{ <span class="k">"statusCode"</span><span class="p">:</span> <span class="s">404</span><span class="p">,</span> <span class="k">"message"</span><span class="p">:</span> <span class="s">"Sala não encontrada"</span><span class="p">,</span> <span class="k">"error"</span><span class="p">:</span> <span class="s">"Not Found"</span> }
+
+<span class="c">// erro de validação (ValidationPipe) — message vira array</span>
+{ <span class="k">"statusCode"</span><span class="p">:</span> <span class="s">400</span><span class="p">,</span> <span class="k">"message"</span><span class="p">:</span> [<span class="s">"O email não pode estar vazio"</span>]<span class="p">,</span> <span class="k">"error"</span><span class="p">:</span> <span class="s">"Bad Request"</span> }</pre>
+      <p class="note" style="color:var(--ink-muted); font-size:0.85rem; margin-top:8px;">No client, trate <code>message</code> como <code>string | string[]</code>.</p>
+    </section>
+
+    <section id="gotchas">
+      <h2>8. Pegadinhas que afetam o front</h2>
+      <ul class="gotchas">
+        <li><span></span><span><b>Sem checagem de dono.</b> <code>GET/PATCH /user/:id</code>, <code>GET /reservation/:id</code> e as rotas de <code>/favorites/:id</code> aceitam qualquer usuário autenticado, não só o dono ou um admin. Se a UI precisa restringir isso, a checagem é responsabilidade do front — o back não impede.</span></li>
+        <li><span></span><span><b>Swagger com status errado.</b> Vários GETs estão documentados como <code>201</code> no Swagger (<code>/api</code>) por engano. Confie no verbo/HTTP real do controller, não na doc.</span></li>
+        <li><span></span><span><b>Sem prefixo de rota.</b> <code>/api</code> é só o path do Swagger UI — as rotas reais são <code>/auth</code>, <code>/token</code>, <code>/user</code>, <code>/room</code>, <code>/reservation</code>, <code>/favorites</code>, sem prefixo.</span></li>
+        <li><span></span><span><b>Access token sobrevive ao logout.</b> Só o refresh token é revogado no servidor; um access token antigo continua válido até expirar naturalmente.</span></li>
+      </ul>
+    </section>
+
+    <section id="client">
+      <h2>9. Client mínimo no front</h2>
+      <p class="section-sub">Um wrapper fino resolve — sem SDK gerado, sem camada extra. Construa funções por rota só conforme o front for de fato consumindo cada uma.</p>
+      <pre class="code"><span class="c">// apiClient.js — esqueleto mínimo, ajustar storage dos tokens ao framework do front</span>
+<span class="k">const</span> BASE_URL <span class="p">=</span> <span class="s">"http://localhost:3000"</span><span class="p">;</span>
+
+<span class="k">async function</span> apiFetch(path, options <span class="p">=</span> {}) {
+  <span class="k">const</span> res <span class="p">=</span> <span class="k">await</span> fetch(BASE_URL <span class="p">+</span> path, {
+    ...options,
+    headers: {
+      <span class="s">"Content-Type"</span>: <span class="s">"application/json"</span>,
+      ...(accessToken <span class="p">&&</span> { Authorization: <span class="s">`Bearer ${accessToken}`</span> }),
+      ...options.headers,
+    },
+  });
+
+  <span class="k">if</span> (res.status <span class="p">===</span> <span class="s">401</span> <span class="p">&&</span> refreshToken <span class="p">&&</span> <span class="p">!</span>options._retried) {
+    <span class="k">const</span> refreshed <span class="p">=</span> <span class="k">await</span> refreshTokens(); <span class="c">// POST /token/refresh</span>
+    <span class="k">if</span> (refreshed) <span class="k">return</span> apiFetch(path, { ...options, _retried: <span class="k">true</span> });
+  }
+
+  <span class="k">if</span> (<span class="p">!</span>res.ok) {
+    <span class="k">const</span> body <span class="p">=</span> <span class="k">await</span> res.json().catch(() <span class="p">=&gt;</span> ({}));
+    <span class="k">throw new</span> Error([].concat(body.message <span class="p">||</span> res.statusText).join(<span class="s">", "</span>));
+  }
+
+  <span class="k">return</span> res.status <span class="p">===</span> <span class="s">204</span> <span class="p">?</span> <span class="k">null</span> <span class="p">:</span> res.json();
+}</pre>
+    </section>
+
+    <footer class="src">
+      Fatos verificados em <code>src/main.ts</code>, <code>src/*/*.controller.ts</code>, <code>src/*/dto/*.dto.ts</code>, <code>src/auth</code>, <code>src/token</code>, <code>prisma/schema.prisma</code> do repositório <code>desafio_techlead_back</code>.
+    </footer>
+  </main>
+</div>
