@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { UserIcon, MailIcon, LockIcon } from '@/components/ui/Icons';
-import { createUser } from '@/app/api/api';
+import { createUser, login } from '@/app/api/api';
+import { setAuthCookies } from '@/utils/lib/auth';
 import Link from 'next/link';
 
 export default function Home() {
@@ -33,6 +34,8 @@ export default function Home() {
     setLoading(true);
     try {
       await createUser({ name, email, password });
+      const tokens = await login({ email, password });
+      setAuthCookies(tokens);
       router.push('/platform');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível cadastrar');
