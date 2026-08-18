@@ -42,6 +42,25 @@ A aplicação sobe em **`http://localhost:3001`** (porta customizada nos scripts
 | --- | --- | --- |
 | `NEXT_PUBLIC_API_URL` | URL base da API de back-end | `http://localhost:3000` |
 
+## Docker
+
+O repositório inclui um `Dockerfile` (imagem `node:24-alpine`, roda `npm install` e sobe o
+servidor de desenvolvimento na porta `3001`). Não há `docker-compose.yml` — build e run são
+feitos manualmente:
+
+```bash
+# build da imagem
+docker build -t booking-front .
+
+# run, publicando a porta e passando a URL da API
+docker run -p 3001:3001 -e NEXT_PUBLIC_API_URL=http://localhost:3000 booking-front
+```
+
+Como o `.dockerignore` exclui os arquivos `.env*`, a variável `NEXT_PUBLIC_API_URL` não vai para
+dentro da imagem — precisa ser passada no `docker run` (`-e` ou `--env-file .env.local`). Se a API
+também rodar em Docker/localhost, ajuste o valor para o host acessível a partir do container (ex.:
+`http://host.docker.internal:3000` no Docker Desktop).
+
 ## Integração com a API
 
 Toda a comunicação com o back-end passa por `src/app/api/api.ts`, através de uma função central
