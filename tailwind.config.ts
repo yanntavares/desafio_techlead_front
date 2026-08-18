@@ -1,0 +1,26 @@
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        "darkest-blue": "#00236F",
+        normal: "#444651",
+        border: "#C5C5D3",
+      },
+      fontFamily: {
+        sans: ['var(--roboto)', 'var(--poppins)'],
+        inter: ['var(--inter)'],
+        poppins: ['var(--poppins)'],
+      }
+    },
+  },
+  plugins: [],
+} satisfies Config
