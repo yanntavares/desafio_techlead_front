@@ -5,7 +5,7 @@ export type TimeSlot = { time: string; status: SlotStatus };
 export type DaySchedule = { day: string; slots: TimeSlot[] };
 
 const SLOT_HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-const DAYS_AHEAD = 7;
+const DAYS_AHEAD = 5;
 
 export function buildSchedule(
   reservations: Reservation[],

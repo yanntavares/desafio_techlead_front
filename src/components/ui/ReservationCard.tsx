@@ -41,7 +41,7 @@ export function ReservationCard({
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
 
   return (
-    <div className="w-full h-auto md:h-64 bg-[#FAFAFA] border-2 border-border/30 rounded-lg overflow-hidden flex flex-col md:flex-row md:items-center md:pr-6">
+    <div className="w-full md:w-[448px] h-auto md:h-64 bg-[#FAFAFA] border-2 border-border/30 rounded-lg overflow-hidden flex flex-col md:flex-row md:items-center md:pr-6">
       <div className="relative w-full h-40 md:w-[178px] md:h-full shrink-0">
         <Image
           src="/images/placeholder.png"
@@ -52,7 +52,7 @@ export function ReservationCard({
         />
       </div>
 
-      <div className="flex flex-col items-start justify-center gap-4 w-full p-4 md:pl-6">
+      <div className="flex flex-col items-start justify-center gap-4 w-full p-4 md:p-0 md:pl-6">
         <div className="flex flex-col gap-2 w-full">
           <div className="flex items-center gap-1 text-lg text-[#505F76] p-1 rounded-xl self-start">
             <CapacityIcon />
