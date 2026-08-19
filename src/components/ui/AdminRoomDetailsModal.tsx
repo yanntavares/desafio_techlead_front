@@ -39,11 +39,18 @@ export function AdminRoomDetailsModal({
   // ponytail: mirrors RoomDetailsModal.tsx — GET /room/active never includes reservations,
   // so fetch this room's own reservations fresh whenever the modal opens.
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   useEffect(() => {
     if (!isOpen) return;
+    setWeekOffset(0);
     getRoomReservations(roomId).then(setReservations).catch(() => setReservations([]));
   }, [isOpen, roomId]);
-  const { schedule } = useMemo(() => buildSchedule(reservations), [reservations]);
+  const startDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + weekOffset * 5);
+    return d;
+  }, [weekOffset]);
+  const { schedule } = useMemo(() => buildSchedule(reservations, startDate), [reservations, startDate]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -104,7 +111,12 @@ export function AdminRoomDetailsModal({
 
           <div id="admin-room-availability">
             <p className="text-xs font-semibold text-normal uppercase tracking-wide mb-2">Disponibilidade</p>
-            <AvailabilityGrid schedule={schedule} />
+            <AvailabilityGrid
+              schedule={schedule}
+              onPrevWeek={() => setWeekOffset((w) => Math.max(0, w - 1))}
+              onNextWeek={() => setWeekOffset((w) => w + 1)}
+              canGoPrev={weekOffset > 0}
+            />
           </div>
 
           {reactivateError && <p className="text-sm text-red-600">{reactivateError}</p>}

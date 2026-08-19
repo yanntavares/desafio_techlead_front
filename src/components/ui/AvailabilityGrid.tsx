@@ -5,9 +5,12 @@ export type TimeSlot = { time: string; status: SlotStatus };
 export type DaySchedule = { day: string; slots: TimeSlot[] };
 
 const SLOT_HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-const DAYS_AHEAD = 5;
+const DAYS_AHEAD = 7;
 
-export function buildSchedule(reservations: Reservation[]): {
+export function buildSchedule(
+  reservations: Reservation[],
+  startDate: Date = new Date(),
+): {
   schedule: DaySchedule[];
   dateByDay: Record<string, Date>;
 } {
@@ -16,7 +19,7 @@ export function buildSchedule(reservations: Reservation[]): {
   const schedule: DaySchedule[] = [];
 
   for (let i = 0; i < DAYS_AHEAD; i++) {
-    const date = new Date();
+    const date = new Date(startDate);
     date.setDate(date.getDate() + i);
     date.setHours(0, 0, 0, 0);
     const rawLabel = date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
@@ -48,12 +51,36 @@ type AvailabilityGridProps = {
   selectedDay?: string | null;
   selectedTime?: string | null;
   onSelectSlot?: (day: string, time: string) => void;
+  onPrevWeek?: () => void;
+  onNextWeek?: () => void;
+  canGoPrev?: boolean;
 };
 
-export function AvailabilityGrid({ schedule, selectedDay, selectedTime, onSelectSlot }: AvailabilityGridProps) {
+const weekNavButtonClassName =
+  'px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors';
+
+export function AvailabilityGrid({
+  schedule,
+  selectedDay,
+  selectedTime,
+  onSelectSlot,
+  onPrevWeek,
+  onNextWeek,
+  canGoPrev,
+}: AvailabilityGridProps) {
   return (
     <div className="overflow-x-auto h-64">
       <div className="min-w-[420px]">
+        {(onPrevWeek || onNextWeek) && (
+          <div className="flex items-center justify-between mb-2">
+            <button type="button" onClick={onPrevWeek} disabled={!canGoPrev} className={weekNavButtonClassName}>
+              Semana anterior
+            </button>
+            <button type="button" onClick={onNextWeek} className={weekNavButtonClassName}>
+              Próxima semana
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-6 border-b border-border/30">
           <div className="py-2" />
           {schedule.map(({ day }) => (

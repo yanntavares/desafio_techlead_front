@@ -49,11 +49,21 @@ export function RoomDetailsModal({
   // ponytail: GET /room/active never includes reservations, so fetch this room's own
   // reservations fresh whenever the modal opens instead of trusting a stale/empty prop.
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   useEffect(() => {
     if (!isOpen) return;
+    setWeekOffset(0);
     getRoomReservations(roomId).then(setReservations).catch(() => setReservations([]));
   }, [isOpen, roomId]);
-  const { schedule, dateByDay } = useMemo(() => buildSchedule(reservations), [reservations]);
+  const startDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + weekOffset * 5);
+    return d;
+  }, [weekOffset]);
+  const { schedule, dateByDay } = useMemo(
+    () => buildSchedule(reservations, startDate),
+    [reservations, startDate],
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -176,6 +186,9 @@ export function RoomDetailsModal({
               selectedDay={selectedDay}
               selectedTime={selectedTime}
               onSelectSlot={handleSelectSlot}
+              onPrevWeek={() => setWeekOffset((w) => Math.max(0, w - 1))}
+              onNextWeek={() => setWeekOffset((w) => w + 1)}
+              canGoPrev={weekOffset > 0}
             />
           </div>
 
