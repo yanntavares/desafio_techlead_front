@@ -4,6 +4,9 @@ Front-end da aplicação de reserva de salas de reunião. Este repositório cont
 cliente web**, construído em Next.js/React, que consome uma API REST desenvolvida separadamente
 (repositório de back-end à parte).
 
+## Figma
+O design foi primeiramente prototipado no [Figma](https://www.figma.com/design/tEcV7cDDQDahBoa4zVxDMj/Desafio-Techlead?node-id=0-1&t=cskzhEFtqQ5hppVQ-1), com todas as telas e modais para só após isso serem implementadas no código, seguindo as boas práticas do desenvolvimento web.
+
 ## Stack
 
 | Camada | Tecnologia |
